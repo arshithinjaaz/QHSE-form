@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QHSE Inspection Report</title>
+    <style>
+        /* CSS is critical for WeasyPrint layout */
+        body { font-family: Arial, sans-serif; font-size: 10pt; margin: 0; padding: 20px; }
+        h1 { color: #0056b3; border-bottom: 2px solid #ccc; padding-bottom: 5px; }
+        .section { margin-top: 15px; padding: 10px; border: 1px solid #eee; }
+        .data-table th, .data-table td { 
+            text-align: left; padding: 5px; border-bottom: 1px solid #f2f2f2; 
+            vertical-align: top;
+        }
+        .data-table th { width: 30%; font-weight: bold; color: #333; }
+        .media-area img { max-width: 100%; height: auto; border: 1px solid #ccc; display: block; margin-top: 10px; }
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        .signature-box img { height: 80px; width: 200px; } /* Set fixed size for signature */
+    </style>
+</head>
+<body>
+
+    <h1>QHSE Inspection Report - {{ building_name }}</h1>
+    <p>Date: **{{ inspection_date }}**</p>
+
+    <div class="section">
+        <h2>Details</h2>
+        <table class="data-table" width="100%">
+            <tr><th>Building Name</th><td>{{ report_data.building_name }}</td></tr>
+            <tr><th>Building Address</th><td>{{ report_data.building_address|replace('\n', '<br>') }}</td></tr>
+            <tr><th>Site Contact</th><td>{{ report_data.site_contact_name }} ({{ report_data.site_contact_phone }})</td></tr>
+            <tr><th>Inspector</th><td>{{ report_data.inspector_name }}</td></tr>
+            <tr><th>Overall Status</th><td class="status-{{ report_data.overall_status|lower }}">{{ report_data.overall_status }}</td></tr>
+            <tr><th>Comments</th><td>{{ report_data.comments|default:"No comments."|replace('\n', '<br>') }}</td></tr>
+        </table>
+    </div>
+
+    <div class="media-area">
+        <h2>Visual Documentation & Signature</h2>
+
+        <h3>Inspection Photo</h3>
+        {% if inspection_photo_url %}
+            <img src="{{ inspection_photo_url }}" alt="Inspection Photo" style="width: 400px; height: auto;">
+        {% else %}
+            <p>No inspection photo provided.</p>
+        {% endif %}
+
+        <h3>Inspector Signature</h3>
+        <div class="signature-box">
+            {% if inspector_signature_url %}
+                <img src="{{ inspector_signature_url }}" alt="Inspector Signature">
+            {% else %}
+                <p>No signature captured.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

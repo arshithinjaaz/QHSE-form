@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QHSE Inspection Form</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <style>
+        /* Basic styling */
+        #signature-pad { border: 1px solid #ccc; cursor: crosshair; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h2>QHSE Inspection Form</h2>
+    
+    <div id="qhse-form-container">
+        
+        <div class="input-group">
+            <label>Project Name (for PDF filename):</label>
+            <input type="text" name="project_name" required>
+        </div>
+        <div class="input-group">
+            <label>Assessor Name (for signature block):</label>
+            <input type="text" name="assessor_name" required>
+        </div>
+        <div class="input-group">
+            <label>Date of Visit:</label>
+            <input type="date" name="date_of_visit" required>
+        </div>
+        <div class="input-group">
+            <label>Inspection Photo (Will be used in Block 8):</label>
+            <input type="file" id="inspection_photo" name="inspection_photo" accept="image/*" required>
+        </div>
+        
+        <div class="input-group">
+            <label>Assessor Signature:</label>
+            <canvas id="signature-pad" width="400" height="150"></canvas>
+            <button type="button" id="clear-signature">Clear Signature</button>
+        </div>
+
+        <hr>
+
+        <button type="button" onclick="submitForm('/download-pdf')">Generate PDF</button>
+        <button type="button" onclick="submitForm('/download-excel')">Generate Excel</button>
+    </div>
+
+    <script>
+        // --- Signature Pad Setup ---
+        const canvas = document.getElementById('signature-pad');
+        const signaturePad = new SignaturePad(canvas);
+        document.getElementById('clear-signature').addEventListener('click', () => signaturePad.clear());
+
+        // Utility function to convert File object to Base64 Data URL
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result); // Result is the full data URL string
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // --- Core Submission Function ---
+        async function submitForm(targetRoute) {
+            const container = document.getElementById('qhse-form-container');
+            const data = {};
+            let isFormValid = true;
+
+            // 1. Collect text/select inputs and perform basic validation
+            container.querySelectorAll('input[name], textarea[name], select[name]').forEach(input => {
+                // Quick client-side required check
+                if (input.required && !input.value.trim()) {
+                    isFormValid = false;
+                    input.style.border = '1px solid red';
+                } else {
+                    input.style.border = ''; // Reset border
+                }
+                data[input.name] = input.value;
+            });
+
+            if (!isFormValid) {
+                alert("Please fill in all required text fields.");
+                return;
+            }
+
+            // 2. Get Photo File
+            const photoInput = document.getElementById('inspection_photo');
+            const photoFile = photoInput.files[0];
+            
+            if (!photoFile) {
+                alert("Please upload an inspection photo.");
+                return;
+            }
+
+            // 3. Get Signature Data
+            if (signaturePad.isEmpty()) {
+                alert("Please provide a digital signature.");
+                return;
+            }
+            // IMPORTANT: This key is read by app.py and mapped to 'tech_signature'
+            data['inspector_signature_data'] = signaturePad.toDataURL('image/jpeg');
+            
+            // 4. Convert Photo to Base64 (AWAIT the promise)
+            // This is the Base64 string for the main photo, used by the PDF script
+            data['inspection_photo_data'] = await fileToBase64(photoFile);
+            
+            // 5. Send JSON data via AJAX
+            try {
+                const response = await fetch(targetRoute, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // Handle file download
+                    const blob = await response.blob();
+                    const contentDisposition = response.headers.get('content-disposition');
+                    
+                    const filenameMatch = contentDisposition && contentDisposition.match(/filename="(.+?)"/);
+                    const filename = filenameMatch ? filenameMatch[1] : (targetRoute.includes('pdf') ? 'report.pdf' : 'data.xlsx');
+                    
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error generating file: ${response.status} - ${errorText}`);
+                }
+            } catch (e) {
+                console.error("Fetch Error:", e);
+                alert("Network or server error during generation. Check console for details.");
+            }
+        }
+    </script>
+</body>
+</html>
