@@ -4,9 +4,10 @@ import os
 import json
 from flask import Flask, request, render_template, send_file
 from io import BytesIO
+# IMPORTANT: You must update these functions to accept the new data structure!
 from site_assessment_pdf import generate_assessment_pdf 
 from site_assessment_excel import generate_assessment_excel 
-from qhse_form import TEXT_FIELDS
+# from qhse_form import TEXT_FIELDS # Assuming this still exists
 
 # --- Configuration ---
 app = Flask(__name__)
@@ -26,7 +27,10 @@ os.makedirs(GENERATED_DIR, exist_ok=True)
 @app.route('/')
 def index():
     """Serves the main Site Assessment Form page."""
-    return render_template('index.html', text_fields=TEXT_FIELDS)
+    # Note: If 'qhse_form.py' no longer exists or TEXT_FIELDS is unused, you can remove the import and this argument.
+    # return render_template('index.html', text_fields=TEXT_FIELDS) 
+    return render_template('index.html') 
+
 
 @app.route('/download-pdf', methods=['POST'])
 def download_pdf():
@@ -37,24 +41,38 @@ def download_pdf():
         if not data:
             return "Error: No data received for PDF.", 400
 
-        # The ReportLab function expects two args: assessment_info and photos_data (list of B64 strings)
-        # 1. Extract the main photo and signature data (they will be referenced directly in the PDF script)
+        # --- NEW STEP: Extract Defect Items ---
+        defect_items = data.pop('defect_items', []) 
+        
+        # 1. Extract the main photo and signature data
         main_photo_b64 = data.get('inspection_photo_data') 
         
         # 2. Prepare photos_data list for ReportLab's BLOCK 8 (Photos/Site Diagrams)
-        # We pass the single inspection photo as the first item in the list.
+        # Now this list should also include all the defect photos for a combined photo appendix, 
+        # OR you pass the 'defect_items' array to the PDF generator to handle block-by-block.
+        
+        # For simplicity, we create one large photo list for the generator, 
+        # but you might want to adjust 'generate_assessment_pdf' to handle the item photos separately.
         photos_list = [main_photo_b64] if main_photo_b64 else []
+        
+        # CRITICAL: Append all defect photos to the main photo list (or pass items separately)
+        # We extract all defect photos (Base64 strings) and add them to the photo list
+        for item in defect_items:
+            photos_list.extend(item.get('photos', []))
 
-        # 3. Clean up the main data dictionary before passing to ReportLab (optional, but cleaner)
-        # The ReportLab code looks for 'tech_signature' and 'contact_signature',
-        # so we map the front-end 'inspector_signature_data' to 'tech_signature'
+        # 3. Clean up the main data dictionary and map signatures
         data['tech_signature'] = data.pop('inspector_signature_data', None)
         
         # Remove other temporary base64/mime fields from the main dictionary
         data.pop('inspection_photo_data', None)
         data.pop('inspection_photo_mime', None)
         
-        # 4. Call the ReportLab function
+        # 4. CRITICAL: Inject the list of defect items back into the main data dictionary
+        # This allows generate_assessment_pdf to process the text and photo data block by block
+        data['defect_items'] = defect_items
+        
+        # 5. Call the ReportLab function (REQUIRES UPDATE in site_assessment_pdf.py)
+        # Note: You MUST update generate_assessment_pdf to handle the 'data['defect_items']' list.
         pdf_stream, pdf_filename = generate_assessment_pdf(data, photos_list)
         
         response = send_file(
@@ -79,14 +97,22 @@ def download_excel():
 
         if not data:
             return "Error: No data received for Excel.", 400
-
-        # Clean up Base64 data which is too large for Excel/CSV
+        
+        # --- NEW STEP: Extract Defect Items ---
+        defect_items = data.get('defect_items', []) 
+        
+        # 1. Clean up Base64 data from the main dictionary (too large for Excel/CSV)
         data.pop('inspector_signature_data', None)
         data.pop('inspection_photo_data', None)
         data.pop('inspection_photo_mime', None)
-
+        
+        # 2. CRITICAL: Inject the list of defect items into the main dictionary
+        data['defect_items'] = defect_items
+        
         assessment_info = data
         
+        # 3. Call the Excel function (REQUIRES UPDATE in site_assessment_excel.py)
+        # Note: You MUST update generate_assessment_excel to process the 'data['defect_items']' list.
         excel_stream, excel_filename = generate_assessment_excel(assessment_info) 
         
         response = send_file(

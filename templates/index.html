@@ -9,9 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <style>
         /* Replicating the INJAAZ Report Form Styling */
-        body { 
-            background-color: #f4f7f6; 
-        }
+        body { background-color: #f4f7f6; }
         .form-container { 
             background: white; 
             padding: 30px; 
@@ -31,201 +29,595 @@
             height: 150px;
             background-color: #fff;
         }
+        /* New Styling for Report Items List */
+        .report-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin-bottom: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .nav-tabs .nav-link {
+            color: #125435; 
+            font-weight: bold;
+        }
+        .nav-tabs .nav-link.active {
+            color: white; 
+            background-color: #125435; 
+            border-color: #125435 #125435 white; 
+        }
+        /* Style for invalid input feedback */
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.8l.2 2.4h-.4z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        .logo-side { 
+            max-height: 60px; /* Adjust height as needed */
+            margin-left: 15px;
+        }
     </style>
 </head>
 <body>
     <div class="container my-5">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-10">
                 <div class="form-container">
-                    
+
                     <div class="header-section">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h2 class="text-dark mb-0">QHSE Inspection Form</h2>
+                                <h2 class="text-dark mb-0">QHSE Inspection Report</h2>
                             </div>
                             <div class="col-auto text-end">
-                                <i class="fas fa-clipboard-check fa-2x" style="color: #125435;"></i>
+                                <img src="{{ url_for('static', filename='INJAAZ.png') }}" alt="INJAAZ Logo" class="logo-side">
                             </div>
                         </div>
                     </div>
 
-                    <form id="qhseForm" onsubmit="return false;"> 
+                    <form id="qhseForm"> 
                         
-                        <div id="qhse-form-container">
-                            <h4 class="mb-3 text-secondary">Inspection Details</h4>
-                            <div class="row g-3">
-                                
-                                <div class="col-md-6">
-                                    <label for="project_name" class="form-label">Project Name (for PDF filename) <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="project_name" name="project_name" required>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="assessor_name" class="form-label">Assessor Name (for signature block) <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="assessor_name" name="assessor_name" required>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="date_of_visit" class="form-label">Date of Visit <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="date_of_visit" name="date_of_visit" required>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <label for="inspection_photo" class="form-label">Inspection Photo (Will be used in Block 8) <span class="text-danger">*</span></label>
-                                    <input type="file" class="form-control" id="inspection_photo" name="inspection_photo" accept="image/*" required>
+                        <ul class="nav nav-tabs mb-4" id="reportTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-tab-pane" type="button" role="tab" aria-controls="info-tab-pane" aria-selected="true">1. Inspection Info</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="report-tab" data-bs-toggle="tab" data-bs-target="#report-tab-pane" type="button" role="tab" aria-controls="report-tab-pane" aria-selected="false">2. Defect Report</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-tab-pane" type="button" role="tab" aria-controls="summary-tab-pane" aria-selected="false">3. Summary & Signature</button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content" id="reportTabsContent">
+                            
+                            <div class="tab-pane fade show active" id="info-tab-pane" role="tabpanel" aria-labelledby="info-tab" tabindex="0">
+                                <h4 class="mb-3 text-secondary">Inspection Details</h4>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="project_name" class="form-label">Project Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="project_name" name="project_name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="assessor_name" class="form-label">Assessor Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="assessor_name" name="assessor_name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="date_of_visit" class="form-label">Date of Visit <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" id="date_of_visit" name="date_of_visit" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="building_location" class="form-label">Building Location/Address <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="building_location" name="building_location" required>
+                                    </div>
+                                    
                                 </div>
                             </div>
-                        </div>
+                            
+                            <div class="tab-pane fade" id="report-tab-pane" role="tabpanel" aria-labelledby="report-tab" tabindex="0">
+                                <h4 class="mb-3 text-secondary">Add Defect Item</h4>
+                                <div class="row g-3 mb-4 p-3 border rounded bg-light">
+                                    
+                                    <div class="col-12">
+                                        <label for="defect_location" class="form-label">Location of Defect <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="defect_location" required placeholder="e.g., Level 3, East Wing, AHU 2 Room">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="defect_description" class="form-label">Defect Description <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="defect_description" rows="2" required placeholder="Detailed description of the fault/issue..."></textarea>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="defect_category" class="form-label">Category <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="defect_category" required>
+                                            <option value="" selected disabled>Select Category</option>
+                                            <option value="Safety">Safety Hazard</option>
+                                            <option value="Quality">Quality/Aesthetics</option>
+                                            <option value="Technical">Technical Failure</option>
+                                            <option value="Procedure">Procedural/Documentation</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="defect_priority" class="form-label">Priority <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="defect_priority" required>
+                                            <option value="" selected disabled>Select Priority</option>
+                                            <option value="High">High (Immediate Action)</option>
+                                            <option value="Medium">Medium (Scheduled Action)</option>
+                                            <option value="Low">Low (Non-Critical)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="defect_recommendation" class="form-label">Recommendation</label>
+                                        <input type="text" class="form-control" id="defect_recommendation" placeholder="e.g., Replace pipe, Train staff">
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="defect_photo" class="form-label">Photos of Defect</label>
+                                        <input type="file" class="form-control" id="defect_photo" accept="image/*" multiple> 
+                                    </div>
 
-                        <hr class="my-4">
+                                    <div class="col-12 text-end">
+                                        <button type="button" class="btn btn-primary" id="addItemButton"><i class="fas fa-plus me-2"></i>Add Defect Item</button>
+                                    </div>
+                                </div>
 
-                        <h4 class="mb-3 text-secondary">Assessor Signature</h4>
-                        <div class="card p-3 mb-4">
-                            <h6 class="card-title">Assessor Signature <span class="text-danger">*</span></h6>
-                            <canvas id="signature-pad" class="signature-pad"></canvas>
-                            <div class="mt-2 text-end">
-                                <button type="button" class="btn btn-sm btn-outline-danger" id="clear-signature"><i class="fas fa-trash-alt me-2"></i>Clear Signature</button>
+                                <h5 class="mb-3 text-secondary">Pending Defect List</h5>
+                                <div id="pendingItemsList" class="border p-3 rounded bg-white">
+                                    <p class="text-muted text-center" id="emptyListMessage">No defect items added yet.</p>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="summary-tab-pane" role="tabpanel" aria-labelledby="summary-tab" tabindex="0">
+                                <h4 class="mb-3 text-secondary">Assessor Signature</h4>
+                                
+                                <input type="hidden" id="inspector_signature_data" name="inspector_signature_data">
+
+                                <div class="card p-3 mb-4">
+                                    <h6 class="card-title">Assessor Signature <span class="text-danger">*</span></h6>
+                                    <canvas id="signature-pad" class="signature-pad"></canvas>
+                                    <div class="mt-2 text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger" id="clear-signature-final"><i class="fas fa-trash-alt me-2"></i>Clear Signature</button>
+                                    </div>
+                                </div>
+
+                                <h4 class="text-secondary">Submission Actions</h4>
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <span class="btn btn-outline-primary btn-lg pdf-download-btn"><i class="fas fa-file-pdf me-2"></i>PDF Auto-Download</span>
+                                    <span class="btn btn-outline-success btn-lg excel-download-btn"><i class="fas fa-file-excel me-2"></i>Excel Auto-Download</span>
+                                </div>
+
                             </div>
                         </div>
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <button type="button" class="btn btn-primary btn-lg" onclick="submitForm('/download-pdf')"><i class="fas fa-file-pdf me-2"></i>Generate PDF</button>
-                            <button type="button" class="btn btn-success btn-lg" onclick="submitForm('/download-excel')"><i class="fas fa-file-excel me-2"></i>Generate Excel</button>
-                        </div>
                         
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" id="prevButton" disabled><i class="fas fa-arrow-left me-2"></i>Previous Page</button>
+                            <button type="button" class="btn btn-success" id="nextButton">Next Page<i class="fas fa-arrow-right ms-2"></i></button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script>
+    /* global window, SignaturePad, bootstrap */ 
+    // Linter directives to suppress warnings for necessary global objects
 
-    <script>
-        // --- Signature Pad Setup ---
-        const canvas = document.getElementById('signature-pad');
-        const signaturePad = new SignaturePad(canvas);
-        document.getElementById('clear-signature').addEventListener('click', () => signaturePad.clear());
+    // Global array to hold all defect items added in Tab 2
+    window.pendingItems = [];
+
+    // --- Utility Functions ---
+
+    // Utility function to convert File object to Base64 Data URL
+    function fileToBase64(file) {
+        // Essential check: If 'file' is null, undefined, or not a File object, throw an error or handle it.
+        // The calling function will handle filtering, but this ensures robustness.
+        if (!file || !(file instanceof File)) {
+            // Return an already resolved Promise with a safe value (e.g., empty string)
+            // Or throw an error if files are strictly required.
+            console.warn("Skipping non-File input in fileToBase64 conversion.");
+            return Promise.resolve(''); 
+        }
+
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result); // Result is the full data URL string
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
+    
+    // Function to render the list of pending items
+    function renderPendingItems() {
+        const list = document.getElementById('pendingItemsList');
+        // Check if the list element exists before continuing
+        if (!list) return; 
         
-        // --- Canvas Resize Logic (Adopted from INJAAZ form for responsiveness) ---
+        list.innerHTML = ''; 
+        
+        if (window.pendingItems.length === 0) {
+            const emptyMessage = document.createElement('p');
+            emptyMessage.id = 'emptyListMessage';
+            emptyMessage.className = 'text-muted text-center';
+            emptyMessage.textContent = 'No defect items added yet.';
+            list.appendChild(emptyMessage);
+        } else {
+            window.pendingItems.forEach((item, index) => {
+                const photoCount = item.photos ? item.photos.length : 0;
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('report-item');
+                itemElement.innerHTML = `
+                    <div class="item-details">
+                        <strong>${index + 1}. ${item.defect_description.substring(0, 50)}${item.defect_description.length > 50 ? '...' : ''}</strong>
+                        <p class="mb-0 text-muted small">Loc: ${item.defect_location} | Prio: <strong>${item.defect_priority}</strong> | Photos: ${photoCount}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button type="button" class="btn btn-sm btn-danger remove-item" data-index="${index}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(itemElement);
+            });
+
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    // Use closest() to find the index attribute, in case the click is on the icon
+                    const indexToRemove = parseInt(e.currentTarget.getAttribute('data-index'));
+                    window.pendingItems.splice(indexToRemove, 1);
+                    renderPendingItems();
+                });
+            });
+        }
+    }
+
+    // --- Core Submission Function (REAL-TIME IMPLEMENTATION) ---
+    async function submitForm(targetType) {
+        
+        // 1. Final Validation Check
+        if (window.signaturePad.isEmpty()) {
+            alert("Please provide the Assessor's digital signature in Tab 3.");
+            return false;
+        }
+        
+        // Check required text/date fields from Tab 1
+        if (!document.getElementById('project_name').value.trim() || !document.getElementById('assessor_name').value.trim() || !document.getElementById('date_of_visit').value.trim() || !document.getElementById('building_location').value.trim()) {
+            alert("Please ensure all required fields in '1. Inspection Info' are filled.");
+            return false;
+        }
+        
+        if (window.pendingItems.length === 0) {
+            alert("Please add at least one defect item before proceeding to the Summary.");
+            return false;
+        }
+
+
+        // 2. Data Collection
+        const data = {};
+        const form = document.getElementById('qhseForm');
+        
+        // Collect Tab 1 data (all inputs are now non-file)
+        form.querySelectorAll('#info-tab-pane input[name]').forEach(input => {
+             data[input.name] = input.value;
+        });
+
+        // Collect Tab 2 data (the pendingItems array)
+        data['defect_items'] = window.pendingItems; 
+        
+        // Collect Signature Data
+        const signatureData = window.signaturePad.toDataURL('image/png'); // Use png for better quality signature
+        document.getElementById('inspector_signature_data').value = signatureData;
+        data['inspector_signature_data'] = signatureData;
+        data['target_type'] = targetType; // Send requested format (pdf/excel)
+        
+        
+        // 3. Send Data via AJAX (REAL FETCH REQUEST)
+        let targetRoute = targetType === 'pdf' ? '/download-pdf' : '/download-excel';
+        
+        console.log(`Attempting POST request to ${targetRoute} for ${targetType.toUpperCase()}...`);
+        
+        try {
+            const response = await fetch(targetRoute, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data) // Send JSON data payload
+            });
+
+            if (!response.ok) {
+                // If the server sends an error message, try to read it as JSON
+                let errorDetails = await response.text();
+                try {
+                    const errorJson = JSON.parse(errorDetails);
+                    errorDetails = errorJson.error || errorDetails;
+                } catch (e) {
+                    // Not JSON, use plain text
+                }
+                throw new Error(`Server responded with status: ${response.status} (${response.statusText || 'Error'}). Details: ${errorDetails}`);
+            }
+
+            // Get the filename from the server's response header if possible
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = `QHSE_Report_${new Date().toISOString().slice(0, 10)}.${targetType}`;
+            if (contentDisposition) {
+                const matches = /filename="?(.+)"?/.exec(contentDisposition);
+                if (matches && matches[1]) {
+                    filename = matches[1].replace(/['"]/g, ''); // Clean quotes
+                }
+            }
+            
+            // Convert the response stream to a Blob
+            const blob = await response.blob(); 
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+
+            a.href = url;
+            a.download = filename; // Use the determined filename
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            
+            console.log(`[DOWNLOAD SUCCESS] ${targetType.toUpperCase()} download started with filename: ${filename}`);
+            return true;
+
+        } catch (error) {
+            console.error(`[DOWNLOAD FAILED] ${targetType.toUpperCase()} generation failed:`, error);
+            alert(`Error generating ${targetType.toUpperCase()} report. Please ensure your backend server is running correctly and check the browser console for details. Error: ${error.message}`);
+            return false;
+        }
+    }
+
+
+    // --- Tab Navigation and Setup ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const tabList = document.getElementById('reportTabs');
+        const navTabs = Array.from(document.querySelectorAll('.nav-tabs .nav-link'));
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const addItemButton = document.getElementById('addItemButton');
+        const pdfDownloadBtn = document.querySelector('.pdf-download-btn');
+        const excelDownloadBtn = document.querySelector('.excel-download-btn');
+
+
+        // Setup Signature Pad
+        const canvas = document.getElementById('signature-pad');
+        // Check if canvas exists before initialization
+        if (canvas) {
+            window.signaturePad = new SignaturePad(canvas, {
+                 backgroundColor: 'rgb(255, 255, 255)', 
+            }); 
+            // Signature Clear Handlers
+            document.getElementById('clear-signature-final').addEventListener('click', () => window.signaturePad.clear());
+        }
+
+
+        // Canvas Resize Logic for responsiveness
         function resizeCanvas() {
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            if (signaturePad) {
-                const data = signaturePad.isEmpty() ? '' : signaturePad.toDataURL(); 
+            if (window.signaturePad && canvas) {
+                const data = window.signaturePad.isEmpty() ? '' : window.signaturePad.toDataURL(); 
                 canvas.width = canvas.offsetWidth * ratio;
                 canvas.height = canvas.offsetHeight * ratio;
                 canvas.getContext("2d").scale(ratio, ratio);
-                if (data) signaturePad.fromDataURL(data); 
-                else signaturePad.clear();
+                if (data) window.signaturePad.fromDataURL(data); 
+                else window.signaturePad.clear();
+            }
+        }
+        
+        if (tabList) {
+            tabList.addEventListener('shown.bs.tab', (e) => {
+                if (e.target.id === 'summary-tab') {
+                    resizeCanvas();
+                }
+            });
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+
+        // --- Validation Logic for Navigation ---
+        function validateCurrentTab(activeIndex) {
+            let isValid = true;
+            let tabPaneId = navTabs[activeIndex].getAttribute('data-bs-target');
+            const formInputs = document.querySelectorAll(`${tabPaneId} [required]`);
+            
+            // TAB 1: Inspection Info (Index 0)
+            if (activeIndex === 0) {
+                formInputs.forEach(input => {
+                    // isFileEmpty check removed
+                    const isTextEmpty = (!input.value.trim()); // Only checks for text/date fields
+                    // Special handling for the select fields which have selected disabled option value=""
+                    const isSelectEmpty = (input.tagName === 'SELECT' && !input.value.trim()); 
+
+                    if (isTextEmpty || isSelectEmpty || !input.checkValidity()) {
+                        input.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
+                });
+                if (!isValid) {
+                    alert('Please fill in all required fields (marked with *) in the Inspection Info tab.');
+                }
+                return isValid;
+            }
+            
+            // TAB 2: Defect Report (Index 1) 
+            if (activeIndex === 1) {
+                if (window.pendingItems.length === 0) {
+                    alert('Please add at least one Defect Item before proceeding to the Summary.');
+                    return false;
+                }
+                return true;
+            }
+            
+            // TAB 3: Summary & Signatures (Index 2)
+            if (activeIndex === 2) {
+                 if (window.signaturePad && window.signaturePad.isEmpty()) {
+                    alert("Please provide the Assessor's digital signature before finalizing.");
+                    return false;
+                }
+                return true;
+            }
+
+            return true;
+        }
+
+        // Update Navigation Buttons
+        function updateButtonForTab() {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            if (!activeTab) return;
+            
+            const activeIndex = navTabs.indexOf(activeTab);
+
+            prevButton.disabled = activeIndex === 0;
+
+            if (activeIndex === navTabs.length - 1) {
+                // Last tab: Change Next button role
+                nextButton.classList.remove('btn-success');
+                nextButton.classList.add('btn-primary');
+                nextButton.innerHTML = 'Finish & Generate Reports <i class="fas fa-download ms-2"></i>';
+            } else {
+                // Not the last tab: Standard Next button role
+                nextButton.classList.remove('btn-primary');
+                nextButton.classList.add('btn-success');
+                nextButton.innerHTML = 'Next Page<i class="fas fa-arrow-right ms-2"></i>';
             }
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        // Initial call after DOM load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Wait slightly for layout to settle before initial resize
-            setTimeout(resizeCanvas, 100); 
+        // Navigation Button Handlers
+        prevButton.addEventListener('click', () => {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            if (!activeTab) return;
+
+            const activeIndex = navTabs.indexOf(activeTab);
+            if (activeIndex > 0) {
+                const prevTabButton = navTabs[activeIndex - 1];
+                new bootstrap.Tab(prevTabButton).show(); 
+            }
         });
 
+        // --- MAIN SUBMISSION LOGIC HERE ---
+        nextButton.addEventListener('click', async () => {
+            const activeTab = document.querySelector('.nav-tabs .nav-link.active');
+            if (!activeTab) return;
 
-        // Utility function to convert File object to Base64 Data URL
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result); // Result is the full data URL string
-                reader.onerror = error => reject(error);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // --- Core Submission Function (Retained logic from your original code) ---
-        async function submitForm(targetRoute) {
-            const container = document.getElementById('qhse-form-container');
-            const form = document.getElementById('qhseForm');
-            const data = {};
-            let isFormValid = true;
-
-            // 1. Collect text/select inputs and perform basic validation
-            form.querySelectorAll('input[name], textarea[name], select[name]').forEach(input => {
-                // Client-side required check with Bootstrap feedback
-                if (input.required && !input.value.trim()) {
-                    isFormValid = false;
-                    input.classList.add('is-invalid');
-                } else {
-                    input.classList.remove('is-invalid'); // Reset class
-                }
-                data[input.name] = input.value;
-            });
-
-            if (!isFormValid) {
-                alert("Please fill in all required text fields marked with *.");
+            const activeIndex = navTabs.indexOf(activeTab);
+            
+            // Step 1: Validation
+            if (!validateCurrentTab(activeIndex)) {
                 return;
             }
-
-            // 2. Get Photo File
-            const photoInput = document.getElementById('inspection_photo');
-            const photoFile = photoInput.files[0];
             
-            if (!photoFile) {
-                alert("Please upload an inspection photo.");
-                return;
-            }
-
-            // 3. Get Signature Data
-            if (signaturePad.isEmpty()) {
-                alert("Please provide a digital signature.");
-                return;
-            }
-            // IMPORTANT: This key is read by app.py and mapped to 'tech_signature'
-            data['inspector_signature_data'] = signaturePad.toDataURL('image/jpeg');
-            
-            // 4. Convert Photo to Base64 (AWAIT the promise)
-            data['inspection_photo_data'] = await fileToBase64(photoFile);
-            
-            // 5. Send JSON data via AJAX (Your original fetch logic)
-            try {
-                // Temporary loading feedback
-                const originalButtonText = event.target.innerHTML;
-                event.target.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...`;
-                event.target.disabled = true;
-
-                const response = await fetch(targetRoute, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
+            if (activeIndex < navTabs.length - 1) {
+                // Step 2: Go to the next tab
+                const nextTabButton = navTabs[activeIndex + 1];
+                new bootstrap.Tab(nextTabButton).show();
+            } else {
+                // Step 3: Submission (Last Tab) - Trigger auto-generation
                 
-                if (response.ok) {
-                    // Handle file download
-                    const blob = await response.blob();
-                    const contentDisposition = response.headers.get('content-disposition');
-                    
-                    const filenameMatch = contentDisposition && contentDisposition.match(/filename="(.+?)"/);
-                    const filename = filenameMatch ? filenameMatch[1] : (targetRoute.includes('pdf') ? 'report.pdf' : 'data.xlsx');
-                    
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
+                const originalButtonText = nextButton.innerHTML;
+                nextButton.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating Reports...`;
+                nextButton.disabled = true;
+                
+                // Trigger both submissions sequentially
+                // Note: The success/failure alerts are inside submitForm
+                await submitForm('pdf');
+                await submitForm('excel');
 
-                    alert(`Successfully generated and downloaded: ${filename}`);
-                } else {
-                    const errorText = await response.text();
-                    alert(`Error generating file: ${response.status} - ${errorText}`);
-                }
-            } catch (e) {
-                console.error("Fetch Error:", e);
-                alert("Network or server error during generation. Check console for details.");
-            } finally {
-                // Reset button state
-                event.target.innerHTML = originalButtonText;
-                event.target.disabled = false;
+                // Reset buttons
+                nextButton.innerHTML = originalButtonText;
+                nextButton.disabled = false;
+                updateButtonForTab(); 
             }
-        }
-    </script>
+        });
+
+        // Handlers for the separate PDF/Excel buttons in the final tab
+        pdfDownloadBtn.addEventListener('click', () => submitForm('pdf'));
+        excelDownloadBtn.addEventListener('click', () => submitForm('excel'));
+
+
+        tabList.addEventListener('shown.bs.tab', updateButtonForTab);
+        updateButtonForTab();
+
+        
+        // Function to handle adding a new defect item
+        addItemButton.addEventListener('click', async () => {
+            const locationInput = document.getElementById('defect_location');
+            const descriptionInput = document.getElementById('defect_description');
+            const categoryInput = document.getElementById('defect_category');
+            const priorityInput = document.getElementById('defect_priority');
+            const recommendationInput = document.getElementById('defect_recommendation');
+            const photoInput = document.getElementById('defect_photo');
+            
+            // Simple inline validation check for required fields in the item form
+            let itemIsValid = true;
+            [locationInput, descriptionInput, categoryInput, priorityInput].forEach(input => {
+                // Reset invalid class
+                input.classList.remove('is-invalid');
+
+                // Check for emptiness based on input type/tag
+                const isEmpty = (input.tagName === 'SELECT' && !input.value) || (!input.value.trim());
+
+                if (isEmpty) {
+                    input.classList.add('is-invalid');
+                    itemIsValid = false;
+                }
+            });
+
+            if (!itemIsValid) {
+                alert("Please fill in all required fields for the defect item.");
+                return;
+            }
+
+            // Filter the files to ensure only valid File objects are processed
+            const photoFiles = Array.from(photoInput.files).filter(file => file instanceof File);
+            
+            try {
+                // Convert photos to Base64 (async operation)
+                const base64Photos = await Promise.all(photoFiles.map(fileToBase64));
+
+                const newItem = {
+                    defect_location: locationInput.value,
+                    defect_description: descriptionInput.value,
+                    defect_category: categoryInput.value,
+                    defect_priority: priorityInput.value,
+                    defect_recommendation: recommendationInput.value,
+                    photos: base64Photos.filter(data => data.length > 0), // Filter out empty strings if the fileToBase64 function was resolved with ''
+                };
+
+                window.pendingItems.push(newItem);
+                renderPendingItems(); 
+
+                // Clear item form fields for the next entry
+                locationInput.value = '';
+                descriptionInput.value = '';
+                categoryInput.value = categoryInput.options[0].value; 
+                priorityInput.value = priorityInput.options[0].value; 
+                recommendationInput.value = '';
+                photoInput.value = ''; // Clear file input
+                
+                // Remove invalid classes from defect fields after successful add
+                [locationInput, descriptionInput, categoryInput, priorityInput].forEach(input => input.classList.remove('is-invalid'));
+
+                alert(`Defect Item Added! Total items: ${window.pendingItems.length}`);
+            } catch (error) {
+                console.error("Error processing files during addItemButton click:", error);
+                alert("An error occurred while processing the photo files.");
+            }
+        });
+        
+        renderPendingItems(); // Initial render
+    });
+
+</script>
+    
+
 </body>
 </html>
