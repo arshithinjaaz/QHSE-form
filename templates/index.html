@@ -2,55 +2,132 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QHSE Inspection Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <style>
-        /* Basic styling */
-        #signature-pad { border: 1px solid #ccc; cursor: crosshair; }
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        /* Replicating the INJAAZ Report Form Styling */
+        body { 
+            background-color: #f4f7f6; 
+        }
+        .form-container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
+        }
+        .header-section { 
+            border-bottom: 3px solid #125435; /* Dark Green Line */
+            padding-bottom: 15px; 
+            margin-bottom: 20px; 
+        }
+        .signature-pad {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: crosshair;
+            width: 100%;
+            height: 150px;
+            background-color: #fff;
+        }
     </style>
 </head>
 <body>
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    
+                    <div class="header-section">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h2 class="text-dark mb-0">QHSE Inspection Form</h2>
+                            </div>
+                            <div class="col-auto text-end">
+                                <i class="fas fa-clipboard-check fa-2x" style="color: #125435;"></i>
+                            </div>
+                        </div>
+                    </div>
 
-    <h2>QHSE Inspection Form</h2>
-    
-    <div id="qhse-form-container">
-        
-        <div class="input-group">
-            <label>Project Name (for PDF filename):</label>
-            <input type="text" name="project_name" required>
-        </div>
-        <div class="input-group">
-            <label>Assessor Name (for signature block):</label>
-            <input type="text" name="assessor_name" required>
-        </div>
-        <div class="input-group">
-            <label>Date of Visit:</label>
-            <input type="date" name="date_of_visit" required>
-        </div>
-        <div class="input-group">
-            <label>Inspection Photo (Will be used in Block 8):</label>
-            <input type="file" id="inspection_photo" name="inspection_photo" accept="image/*" required>
-        </div>
-        
-        <div class="input-group">
-            <label>Assessor Signature:</label>
-            <canvas id="signature-pad" width="400" height="150"></canvas>
-            <button type="button" id="clear-signature">Clear Signature</button>
-        </div>
+                    <form id="qhseForm" onsubmit="return false;"> 
+                        
+                        <div id="qhse-form-container">
+                            <h4 class="mb-3 text-secondary">Inspection Details</h4>
+                            <div class="row g-3">
+                                
+                                <div class="col-md-6">
+                                    <label for="project_name" class="form-label">Project Name (for PDF filename) <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="project_name" name="project_name" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="assessor_name" class="form-label">Assessor Name (for signature block) <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="assessor_name" name="assessor_name" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="date_of_visit" class="form-label">Date of Visit <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="date_of_visit" name="date_of_visit" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="inspection_photo" class="form-label">Inspection Photo (Will be used in Block 8) <span class="text-danger">*</span></label>
+                                    <input type="file" class="form-control" id="inspection_photo" name="inspection_photo" accept="image/*" required>
+                                </div>
+                            </div>
+                        </div>
 
-        <hr>
+                        <hr class="my-4">
 
-        <button type="button" onclick="submitForm('/download-pdf')">Generate PDF</button>
-        <button type="button" onclick="submitForm('/download-excel')">Generate Excel</button>
+                        <h4 class="mb-3 text-secondary">Assessor Signature</h4>
+                        <div class="card p-3 mb-4">
+                            <h6 class="card-title">Assessor Signature <span class="text-danger">*</span></h6>
+                            <canvas id="signature-pad" class="signature-pad"></canvas>
+                            <div class="mt-2 text-end">
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clear-signature"><i class="fas fa-trash-alt me-2"></i>Clear Signature</button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" class="btn btn-primary btn-lg" onclick="submitForm('/download-pdf')"><i class="fas fa-file-pdf me-2"></i>Generate PDF</button>
+                            <button type="button" class="btn btn-success btn-lg" onclick="submitForm('/download-excel')"><i class="fas fa-file-excel me-2"></i>Generate Excel</button>
+                        </div>
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // --- Signature Pad Setup ---
         const canvas = document.getElementById('signature-pad');
         const signaturePad = new SignaturePad(canvas);
         document.getElementById('clear-signature').addEventListener('click', () => signaturePad.clear());
+        
+        // --- Canvas Resize Logic (Adopted from INJAAZ form for responsiveness) ---
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            if (signaturePad) {
+                const data = signaturePad.isEmpty() ? '' : signaturePad.toDataURL(); 
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                if (data) signaturePad.fromDataURL(data); 
+                else signaturePad.clear();
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        // Initial call after DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Wait slightly for layout to settle before initial resize
+            setTimeout(resizeCanvas, 100); 
+        });
+
 
         // Utility function to convert File object to Base64 Data URL
         function fileToBase64(file) {
@@ -62,26 +139,27 @@
             });
         }
 
-        // --- Core Submission Function ---
+        // --- Core Submission Function (Retained logic from your original code) ---
         async function submitForm(targetRoute) {
             const container = document.getElementById('qhse-form-container');
+            const form = document.getElementById('qhseForm');
             const data = {};
             let isFormValid = true;
 
             // 1. Collect text/select inputs and perform basic validation
-            container.querySelectorAll('input[name], textarea[name], select[name]').forEach(input => {
-                // Quick client-side required check
+            form.querySelectorAll('input[name], textarea[name], select[name]').forEach(input => {
+                // Client-side required check with Bootstrap feedback
                 if (input.required && !input.value.trim()) {
                     isFormValid = false;
-                    input.style.border = '1px solid red';
+                    input.classList.add('is-invalid');
                 } else {
-                    input.style.border = ''; // Reset border
+                    input.classList.remove('is-invalid'); // Reset class
                 }
                 data[input.name] = input.value;
             });
 
             if (!isFormValid) {
-                alert("Please fill in all required text fields.");
+                alert("Please fill in all required text fields marked with *.");
                 return;
             }
 
@@ -103,11 +181,15 @@
             data['inspector_signature_data'] = signaturePad.toDataURL('image/jpeg');
             
             // 4. Convert Photo to Base64 (AWAIT the promise)
-            // This is the Base64 string for the main photo, used by the PDF script
             data['inspection_photo_data'] = await fileToBase64(photoFile);
             
-            // 5. Send JSON data via AJAX
+            // 5. Send JSON data via AJAX (Your original fetch logic)
             try {
+                // Temporary loading feedback
+                const originalButtonText = event.target.innerHTML;
+                event.target.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...`;
+                event.target.disabled = true;
+
                 const response = await fetch(targetRoute, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -129,6 +211,8 @@
                     document.body.appendChild(a);
                     a.click();
                     a.remove();
+
+                    alert(`Successfully generated and downloaded: ${filename}`);
                 } else {
                     const errorText = await response.text();
                     alert(`Error generating file: ${response.status} - ${errorText}`);
@@ -136,6 +220,10 @@
             } catch (e) {
                 console.error("Fetch Error:", e);
                 alert("Network or server error during generation. Check console for details.");
+            } finally {
+                // Reset button state
+                event.target.innerHTML = originalButtonText;
+                event.target.disabled = false;
             }
         }
     </script>
